@@ -67,6 +67,10 @@ type Client struct {
 	Project ProjectService
 	// Version implements the ReadMe Version API for managing versions.
 	Version VersionService
+
+	// Nuke provides functions for resetting a ReadMe project to its default
+	// nearly empty state.
+	Nuke NukeService
 }
 
 // RequestHeader represents an HTTP header set on requests.
@@ -174,6 +178,7 @@ func NewClient(token string, apiURL ...string) (*Client, error) {
 	client.CustomPage = &CustomPageClient{client: client}
 	client.Doc = &DocClient{client: client}
 	client.Image = &ImageClient{client: client}
+	client.Nuke = &NukeClient{client: client}
 	client.Project = &ProjectClient{client: client}
 	client.Version = &VersionClient{client: client}
 
