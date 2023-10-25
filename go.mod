@@ -1,6 +1,6 @@
 module github.com/liveoaklabs/readme-api-go-client
 
-go 1.20
+go 1.21
 
 require (
 	github.com/boumenot/gocover-cobertura v1.2.0

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/liveoaklabs/readme-api-go-client/internal/testutil"
+	"github.com/liveoaklabs/readme-api-go-client/pkg/mocks"
 	"github.com/liveoaklabs/readme-api-go-client/readme"
 	"github.com/stretchr/testify/assert"
 )
@@ -45,31 +46,22 @@ func Test_Apply_Get(t *testing.T) {
 func Test_Apply_Apply(t *testing.T) {
 	t.Run("when called with valid params", func(t *testing.T) {
 		// Arrange
-		expect := readme.ApplyResponse{}
-
-		mockResponse := testutil.APITestResponse{
-			URL:    applyTestEndpoint,
-			Status: 200,
-			Body: `
-			{
-				"message": "Thanks for applying, Gordon! We'll reach out to you soon!",
-				"keyvalues": "https://www.keyvalues.com/readme",
-				"careers": "https://readme.com/careers",
-				"questions?": "greg@readme.io",
-				"poem": [
+		client := mocks.NewMockClient()
+		expect := readme.ApplyResponse{
+			Message:   "Thanks for applying, Gordon! We'll reach out to you soon!",
+			Keyvalues: "https://www.keyvalues.com/readme",
+			Careers:   "https://readme.com/careers",
+			Questions: "greg@readme.io",
+			Poem: []string{
 				"Thanks for applying to work at ReadMe!",
 				"Your application is lookin' spiffy",
 				"We're going to review it ASAP",
-				"And we'll get back to you in a jiffy!"
-				]
-			}
-		`,
+				"And we'll get back to you in a jiffy!",
+			},
 		}
-		testutil.JsonToStruct(t, mockResponse.Body, &expect)
-		api := mockResponse.New(t)
 
 		// Act
-		got, _, err := api.Apply.Apply(readme.Application{
+		got, _, err := client.Apply.Apply(readme.Application{
 			Name:  "Gordon Ramsay",
 			Email: "gordon@example.com",
 			Job:   "Front End Engineer",
