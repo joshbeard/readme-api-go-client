@@ -1,6 +1,8 @@
 package readme
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // NukeService provides functions for resetting a ReadMe project to its default
 // nearly empty state. This is not a functionality provided by the ReadMe API.
@@ -187,10 +189,10 @@ func (s NukeClient) DestroyChangelogs() []error {
 	}
 
 	for _, changelog := range changelogs {
-		_, _, err := s.client.Changelog.Delete(changelog.ID)
+		_, _, err := s.client.Changelog.Delete(changelog.Slug)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("cannot destroy changelog %s: %w",
-				changelog.ID, err))
+			errs = append(errs, fmt.Errorf("cannot destroy changelog %s (%s): %w",
+				changelog.Slug, changelog.ID, err))
 		}
 	}
 
@@ -208,7 +210,7 @@ func (s NukeClient) DestroyCustomPages() []error {
 	}
 
 	for _, page := range pages {
-		_, _, err := s.client.CustomPage.Delete(page.ID)
+		_, _, err := s.client.CustomPage.Delete(page.Slug)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("cannot destroy custom page %s: %w",
 				page.ID, err))
