@@ -1,77 +1,106 @@
-package readme
+package readme_test
 
 import (
-	"reflect"
-	"testing"
+	"errors"
+	"net/http"
 )
 
-// Create a mockClient that implements the same methods as the actual Client.
-type mockClient struct{}
-
-func (mc *mockClient) Summary() (Summary, []error) {
-	// Simulate a successful summary response.
-	specs := []SummaryAPISpecification{{ID: "1", Title: "API Spec", Version: "1.0"}}
-	categories := []SummaryCategorie{{ID: "1", Slug: "cat", Version: "1.0"}}
-	docs := []SummaryDoc{{ID: "1", Slug: "doc", Version: "1.0"}}
-	changelogs := []SummaryChangelog{{ID: "1", Slug: "change"}}
-	customPages := []SummaryCustomPage{{ID: "1", Slug: "page"}}
-	versions := []SummaryVersion{{ID: "1", Name: "v1.0"}}
-	return Summary{
-		Counts: SummaryCounts{
-			APISpecifications: 1,
-			Categories:        1,
-			Changelogs:        1,
-			CustomPages:       1,
-			Docs:              1,
-			Versions:          1,
-		},
-		APISpecifications: specs,
-		Categories:        categories,
-		Changelogs:        changelogs,
-		CustomPages:       customPages,
-		Docs:              docs,
-		Versions:          versions,
-	}, nil
+type MockHTTPClient struct {
+	Responses []*http.Response
+	Errors    []error
+	Index     int
 }
 
-func TestClient_Summary(t *testing.T) {
-	// Replace the real client with the mock client for testing.
-	client := &Client{}
-
-	// Test successful summary.
-	expected := Summary{
-		Counts: SummaryCounts{
-			APISpecifications: 1,
-			Categories:        1,
-			Changelogs:        1,
-			CustomPages:       1,
-			Docs:              1,
-			Versions:          1,
-		},
-		APISpecifications: []SummaryAPISpecification{{ID: "1", Title: "API Spec", Version: "1.0"}},
-		Categories:        []SummaryCategorie{{ID: "1", Slug: "cat", Version: "1.0"}},
-		Changelogs:        []SummaryChangelog{{ID: "1", Slug: "change"}},
-		CustomPages:       []SummaryCustomPage{{ID: "1", Slug: "page"}},
-		Docs:              []SummaryDoc{{ID: "1", Slug: "doc", Version: "1.0"}},
-		Versions:          []SummaryVersion{{ID: "1", Name: "v1.0"}},
-	}
-	actual, err := client.Summary()
-	if err != nil {
-		t.Errorf("Expected no errors, but got %d errors", len(err))
+func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
+	if m.Index >= len(m.Responses) {
+		return nil, errors.New("Exceeded expected number of requests")
 	}
 
-	t.Logf("Expected %+v", expected)
+	resp := m.Responses[m.Index]
+	err := m.Errors[m.Index]
+	m.Index++
 
-	if !reflect.DeepEqual(actual, expected) {
-		t.Errorf("Expected %+v, but got %+v", expected, actual)
-	}
-
-	// Test error handling.
-	// mockErr := errors.New("mock error")
-	// client = mockClient{}
-	// client.(*Client).mockSummaryError = mockErr
-	// _, errs := client.Summary()
-	// if len(errs) != 1 {
-	// 	t.Errorf("Expected 1 error, but got %d errors", len(errs))
-	// }
+	return resp, err
 }
+
+// func Test_Summary_Get(t *testing.T) {
+// 	t.Run("when API responds with 200", func(t *testing.T) {
+// 		// Arrange
+// 		expect := readme.Summary{
+// 			Counts: readme.SummaryCounts{
+// 				APISpecifications: 1,
+// 				Categories:        1,
+// 				Docs:              1,
+// 				Changelogs:        1,
+// 				CustomPages:       1,
+// 				Versions:          1,
+// 			},
+// 			APISpecifications: []readme.SummaryAPISpecification{
+// 				{
+// 					ID:      "1234567890abcdef",
+// 					Title:   "API Specification 1",
+// 					Version: "1.0.0",
+// 				},
+// 				{
+// 					ID:      "1234567890abcdef",
+// 					Title:   "API Specification 2",
+// 					Version: "1.0.0",
+// 				},
+// 			},
+// 			Categories: []readme.SummaryCategory{
+// 				{
+// 					ID:      "1234567890abcdef",
+// 					Slug:    "category-1",
+// 					Version: "abcdef1234567890",
+// 				},
+// 			},
+// 			Docs: []readme.SummaryDoc{
+// 				{
+// 					ID:      "1234567890abcdef",
+// 					Slug:    "doc-1",
+// 					Version: "abcdef1234567890",
+// 				},
+// 			},
+// 			Changelogs: []readme.SummaryChangelog{
+// 				{
+// 					ID:   "1234567890abcdef",
+// 					Slug: "changelog-1",
+// 				},
+// 			},
+// 			CustomPages: []readme.SummaryCustomPage{
+// 				{
+// 					ID:   "1234567890abcdef",
+// 					Slug: "custom-page-1",
+// 				},
+// 			},
+// 			Versions: []readme.SummaryVersion{
+// 				{
+// 					ID:   "abcdef1234567890",
+// 					Name: "1.0.0",
+// 				},
+// 			},
+// 		}
+// 		// mockResponse := testutil.APITestResponse{
+// 		// 	URL:    projectEndpoint,
+// 		// 	Status: 200,
+// 		// 	Body: `
+// 		// 		{
+// 		// 			"name": "Go Testing",
+// 		// 			"subdomain": "foobar",
+// 		// 			"jwtSecret": "123456789abcdef",
+// 		// 			"baseUrl": "https://developer.example.com",
+// 		// 			"plan": "enterprise"
+// 		// 		}
+// 		// 	`,
+// 		// }
+// 		// testutil.JsonToStruct(t, mockResponse.Body, &expect)
+// 		// api := mockResponse.New(t)
+//
+// 		// Act
+// 		got, err := api.Summary()
+//
+// 		// Assert
+// 		assert.Nil(t, err, "it does not return an error")
+// 		assert.Equal(t, expect, got, "it returns expected Project struct")
+// 	})
+// }

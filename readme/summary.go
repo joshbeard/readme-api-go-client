@@ -4,7 +4,7 @@ package readme
 type Summary struct {
 	Counts            SummaryCounts
 	APISpecifications []SummaryAPISpecification
-	Categories        []SummaryCategorie
+	Categories        []SummaryCategory
 	Docs              []SummaryDoc
 	Changelogs        []SummaryChangelog
 	CustomPages       []SummaryCustomPage
@@ -28,8 +28,8 @@ type SummaryAPISpecification struct {
 	Version string
 }
 
-// SummaryCategorie represents a brief summary of a category.
-type SummaryCategorie struct {
+// SummaryCategory represents a brief summary of a category.
+type SummaryCategory struct {
 	ID      string
 	Slug    string
 	Version string
@@ -63,7 +63,7 @@ type SummaryVersion struct {
 // Summary returns a count of each resource type in a ReadMe project.
 func (c *Client) Summary() (Summary, []error) {
 	specs := make([]SummaryAPISpecification, 0)
-	categories := make([]SummaryCategorie, 0)
+	categories := make([]SummaryCategory, 0)
 	docs := make([]SummaryDoc, 0)
 	changelogs := make([]SummaryChangelog, 0)
 	customPages := make([]SummaryCustomPage, 0)
@@ -105,7 +105,7 @@ func (c *Client) Summary() (Summary, []error) {
 			return Summary{}, []error{err}
 		}
 		for _, cat := range cats {
-			categories = append(categories, SummaryCategorie{
+			categories = append(categories, SummaryCategory{
 				ID:      cat.ID,
 				Slug:    cat.Slug,
 				Version: cat.Version,
