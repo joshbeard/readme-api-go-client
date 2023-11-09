@@ -1,0 +1,10 @@
+quiet: False
+disable-version-string: True
+with-expecter: True
+  #filename: "{{.MockName}}.go"
+outpkg: mocks
+dir: tests/mocks
+packages:
+  github.com/liveoaklabs/readme-api-go-client/readme:
+    config:
+      all: true

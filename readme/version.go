@@ -54,13 +54,6 @@ type VersionService interface {
 	//
 	// API Reference: https://docs.readme.com/main/reference/updateversion
 	Update(version string, params VersionParams) (Version, *APIResponse, error)
-
-	// getVersion parses a provided string to determine if it it's a semantic version identifier
-	// (1.0.0) or an API version identifier (id:63ac899d11c4680047ec5970). If it's an API version
-	// identifier, the value is compared with the results from GetAll() to return the semantic
-	// version that's used for API requests. If the specified version is already a semantic version
-	// string, it will be returned as-is.
-	getVersion(version string) (string, error)
 }
 
 // VersionClient handles communication with the Project related methods of the ReadMe.com API.
@@ -135,7 +128,7 @@ var _ VersionService = &VersionClient{}
 // for API requests. If the specified version is already a semantic version string, it will be
 // returned as-is.
 func (c *VersionClient) getVersion(version string) (string, error) {
-	isID, reqID := parseID(version)
+	isID, reqID := ParseID(version)
 	if !isID {
 		return version, nil
 	}

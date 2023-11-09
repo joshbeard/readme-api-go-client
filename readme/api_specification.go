@@ -258,7 +258,7 @@ func (c *APISpecificationClient) createOrUpdateSpec(
 	}
 	response := &APISpecificationSaved{}
 
-	isUUID, uuid := parseUUID(definition)
+	isUUID, uuid := ParseUUID(definition)
 	if isUUID {
 		_, apiResponse, err = c.createOrUpdateWithUUID(method, url, uuid, version, response)
 	} else {

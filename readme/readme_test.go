@@ -2,18 +2,11 @@ package readme_test
 
 import (
 	"fmt"
-	"net/http"
 	"testing"
 
 	"github.com/liveoaklabs/readme-api-go-client/readme"
 	"github.com/stretchr/testify/assert"
 )
-
-// mockPaginatedRequestHeader represents common and valid HTTP headers for paginated requests.
-var mockPaginatedRequestHeader = http.Header{
-	"Link":          {`<>; rel="next", <>; rel="prev", <>; rel="last"`},
-	"X-Total-Count": {"20"},
-}
 
 // TestNewClient tests the package's main setup function.
 func Test_NewClient(t *testing.T) {

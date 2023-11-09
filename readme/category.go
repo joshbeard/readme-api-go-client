@@ -244,7 +244,7 @@ func (c *CategoryClient) Get(category string, options ...RequestOptions) (Catego
 		opts = options[0]
 	}
 
-	isID, paramID := parseID(category)
+	isID, paramID := ParseID(category)
 	if isID {
 		category = ""
 

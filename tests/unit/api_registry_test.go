@@ -5,6 +5,7 @@ import (
 
 	"github.com/liveoaklabs/readme-api-go-client/internal/testutil"
 	"github.com/liveoaklabs/readme-api-go-client/readme"
+	mocks "github.com/liveoaklabs/readme-api-go-client/tests/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,11 +14,9 @@ const registryEndpoint = "http://readme-test.local/api/v1/api-registry"
 func Test_APIRegistry_Get(t *testing.T) {
 	t.Run("when called with an existing uuid", func(t *testing.T) {
 		// Arrange
-		mockResponse := testutil.APITestResponse{
-			URL:    registryEndpoint + "/3bbeunznlboryu0o",
-			Status: 200,
-			Body: `
-			{
+		expectResponse := &readme.APIResponse{
+			APIErrorResponse: readme.APIErrorResponse{},
+			Body: []byte(`{
 				"openapi": "3.0.2",
 				"info": {
 					"description": "OpenAPI Specification for Testing.",
@@ -30,16 +29,20 @@ func Test_APIRegistry_Get(t *testing.T) {
 					}
 				}
 			}
-		`,
+		`),
 		}
-		api := mockResponse.New(t)
+		mockClient := mocks.NewTestClient(t)
+		mockClient.APIRegistry.EXPECT().Get("3bbeunznlboryu0o").Return(string(expectResponse.Body), expectResponse, nil)
 
 		// Act
-		got, _, err := api.APIRegistry.Get("3bbeunznlboryu0o")
+		got, response, err := mockClient.APIRegistry.Get("3bbeunznlboryu0o")
 
 		// Assert
 		assert.NoError(t, err, "it does not return an error")
-		assert.Equal(t, mockResponse.Body, got, "it returns the API definition string")
+		assert.Equal(t, expectResponse, response, "it returns the expected response")
+		assert.Equal(t, string(expectResponse.Body), got, "it returns the expected body")
+
+		mockClient.APIRegistry.AssertExpectations(t)
 	})
 
 	t.Run("when API responds with 404", func(t *testing.T) {

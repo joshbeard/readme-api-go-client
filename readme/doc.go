@@ -298,7 +298,7 @@ func (c *DocClient) Get(doc string, options ...RequestOptions) (Doc, *APIRespons
 		opts = options[0]
 	}
 
-	isID, paramID := parseID(doc)
+	isID, paramID := ParseID(doc)
 	if isID {
 		// Reset the doc query. A matching search result will set this to its slug.
 		doc = ""

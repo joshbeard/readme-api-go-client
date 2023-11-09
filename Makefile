@@ -52,3 +52,8 @@ check-vuln: ## Check for vulnerabilities using 'govulncheck'
 .PHONY: clean
 clean: ## Clean test files
 	@rm -f coverage.txt coverage.xml coverage.html checkstyle-report.xml
+
+.PHONY: mocks
+mocks: ## Generate mocks
+	# @mockery --all --keeptree --output ./mocks --outpkg mocks --case underscore
+	@mockery --all
