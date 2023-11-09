@@ -1,13 +1,11 @@
 package readme
 
+// NukeService provides functions for resetting a ReadMe project to its default
+// nearly empty state. This is not a functionality provided by the ReadMe API.
+
 import (
 	"fmt"
 )
-
-// NukeService provides functions for resetting a ReadMe project to its default
-// nearly empty state. This is not a functionality provided by the ReadMe API.
-// Instead, it is convenience functions that use the ReadMe API to delete
-// resources.
 
 // ReadMe doesn't allow the default 1.0.0 version to be deleted.
 const (

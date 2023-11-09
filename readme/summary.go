@@ -61,19 +61,20 @@ type SummaryVersion struct {
 }
 
 // Summary returns a count of each resource type in a ReadMe project.
+// Errors are returned in a slice.
 func (c *Client) Summary() (Summary, []error) {
-	specs := make([]SummaryAPISpecification, 0)
-	categories := make([]SummaryCategory, 0)
-	docs := make([]SummaryDoc, 0)
-	changelogs := make([]SummaryChangelog, 0)
-	customPages := make([]SummaryCustomPage, 0)
-	versionSummary := make([]SummaryVersion, 0)
+	var retErrs []error
 
 	// Get all versions.
 	versions, _, err := c.Version.GetAll()
 	if err != nil {
 		return Summary{}, []error{err}
 	}
+
+	specs := make([]SummaryAPISpecification, 0)
+	categories := make([]SummaryCategory, 0)
+	docs := make([]SummaryDoc, 0)
+	versionSummary := make([]SummaryVersion, 0)
 
 	// Get all versioned resources.
 	for _, version := range versions {
@@ -86,68 +87,38 @@ func (c *Client) Summary() (Summary, []error) {
 			Version: version.VersionClean,
 		}
 
-		// Get all specs.
-		s, _, err := c.APISpecification.GetAll(requestOptions)
-		if err != nil {
-			return Summary{}, []error{err}
+		// Get API specifications for this version.
+		s, errs := c.SummaryAPISpecifications(requestOptions)
+		if errs != nil {
+			retErrs = append(retErrs, errs...)
 		}
-		for _, spec := range s {
-			specs = append(specs, SummaryAPISpecification{
-				ID:      spec.ID,
-				Title:   spec.Title,
-				Version: spec.Version,
-			})
-		}
+		specs = append(specs, s...)
 
-		// Get all categories.
-		cats, _, err := c.Category.GetAll(requestOptions)
-		if err != nil {
-			return Summary{}, []error{err}
+		// Get all categories for this version.
+		cats, errs := c.SummaryCategories(requestOptions)
+		if errs != nil {
+			retErrs = append(retErrs, errs...)
 		}
-		for _, cat := range cats {
-			categories = append(categories, SummaryCategory{
-				ID:      cat.ID,
-				Slug:    cat.Slug,
-				Version: cat.Version,
-			})
-		}
+		categories = append(categories, cats...)
 
-		// Get all docs.
-		d, _, err := c.Doc.Search("*", requestOptions)
-		if err != nil {
-			return Summary{}, []error{err}
+		// Get all docs for this version.
+		d, errs := c.SummaryDocs(requestOptions)
+		if errs != nil {
+			retErrs = append(retErrs, errs...)
 		}
-		for _, doc := range d {
-			docs = append(docs, SummaryDoc{
-				ID:      doc.ObjectID,
-				Slug:    doc.Slug,
-				Version: doc.Version,
-			})
-		}
+		docs = append(docs, d...)
 	}
 
 	// Get all custom pages.
-	pages, _, err := c.CustomPage.GetAll()
-	if err != nil {
-		return Summary{}, []error{err}
-	}
-	for _, page := range pages {
-		customPages = append(customPages, SummaryCustomPage{
-			ID:   page.ID,
-			Slug: page.Slug,
-		})
+	customPages, errs := c.SummaryCustomPages()
+	if errs != nil {
+		retErrs = append(retErrs, errs...)
 	}
 
 	// Get all changelogs.
-	ch, _, err := c.Changelog.GetAll()
-	if err != nil {
-		return Summary{}, []error{err}
-	}
-	for _, changelog := range ch {
-		changelogs = append(changelogs, SummaryChangelog{
-			ID:   changelog.ID,
-			Slug: changelog.Slug,
-		})
+	changelogs, errs := c.SummaryChangelogs()
+	if errs != nil {
+		retErrs = append(retErrs, errs...)
 	}
 
 	return Summary{
@@ -165,5 +136,101 @@ func (c *Client) Summary() (Summary, []error) {
 		CustomPages:       customPages,
 		Docs:              docs,
 		Versions:          versionSummary,
-	}, nil
+	}, retErrs
+}
+
+// SummaryAPISpecifications returns a summary of all API specifications in a
+// ReadMe project. The requestOptions argument is used to specify a version.
+func (c Client) SummaryAPISpecifications(requestOptions RequestOptions) ([]SummaryAPISpecification, []error) {
+	specs, _, err := c.APISpecification.GetAll(requestOptions)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	summary := make([]SummaryAPISpecification, 0)
+	for _, spec := range specs {
+		summary = append(summary, SummaryAPISpecification{
+			ID:      spec.ID,
+			Title:   spec.Title,
+			Version: spec.Version,
+		})
+	}
+
+	return summary, nil
+}
+
+// SummaryCategories returns a summary of all categories in a ReadMe project.
+// The requestOptions argument is used to specify a version.
+func (c Client) SummaryCategories(requestOptions RequestOptions) ([]SummaryCategory, []error) {
+	categories, _, err := c.Category.GetAll(requestOptions)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	summary := make([]SummaryCategory, 0)
+	for _, category := range categories {
+		summary = append(summary, SummaryCategory{
+			ID:      category.ID,
+			Slug:    category.Slug,
+			Version: category.Version,
+		})
+	}
+
+	return summary, nil
+}
+
+// SummaryChangelogs returns a summary of all changelogs in a ReadMe project.
+func (c Client) SummaryChangelogs() ([]SummaryChangelog, []error) {
+	changelogs, _, err := c.Changelog.GetAll()
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	summary := make([]SummaryChangelog, 0)
+	for _, changelog := range changelogs {
+		summary = append(summary, SummaryChangelog{
+			ID:   changelog.ID,
+			Slug: changelog.Slug,
+		})
+	}
+
+	return summary, nil
+}
+
+// SummaryCustomPages returns a summary of all custom pages in a ReadMe project.
+func (c Client) SummaryCustomPages() ([]SummaryCustomPage, []error) {
+	pages, _, err := c.CustomPage.GetAll()
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	summary := make([]SummaryCustomPage, 0)
+	for _, page := range pages {
+		summary = append(summary, SummaryCustomPage{
+			ID:   page.ID,
+			Slug: page.Slug,
+		})
+	}
+
+	return summary, nil
+}
+
+// SummaryDocs returns a summary of all docs in a ReadMe project. The
+// requestOptions argument is used to specify a version.
+func (c Client) SummaryDocs(requestOptions RequestOptions) ([]SummaryDoc, []error) {
+	docs, _, err := c.Doc.Search("*", requestOptions)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	summary := make([]SummaryDoc, 0)
+	for _, doc := range docs {
+		summary = append(summary, SummaryDoc{
+			ID:      doc.ObjectID,
+			Slug:    doc.Slug,
+			Version: doc.Version,
+		})
+	}
+
+	return summary, nil
 }
