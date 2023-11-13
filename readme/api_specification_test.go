@@ -1,11 +1,14 @@
 package readme_test
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
 	"github.com/liveoaklabs/readme-api-go-client/internal/testutil"
 	"github.com/liveoaklabs/readme-api-go-client/readme"
+	"github.com/liveoaklabs/readme-api-go-client/tests/mocks"
+	"github.com/liveoaklabs/readme-api-go-client/tests/testdata"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -63,11 +66,21 @@ func Test_APISpecification_GetAll(t *testing.T) {
 		Headers: mockPaginatedRequestHeader,
 	}
 	testutil.JsonToStruct(t, mockResponse.Body, &expect)
-	api := mockResponse.New(t)
+	expectResponse := &readme.APIResponse{
+		APIErrorResponse: readme.APIErrorResponse{},
+		Body:             []byte(testutil.StructToJson(t, expect)),
+		HTTPResponse: &http.Response{
+			StatusCode: 200,
+			Header:     mockPaginatedRequestHeader,
+		},
+		Request: &readme.APIRequest{},
+	}
+	mockClient := mocks.NewTestClient(t)
+	mockClient.APISpecification.EXPECT().GetAll().Return(expect, expectResponse, nil)
 
 	t.Run("when called no parameters", func(t *testing.T) {
 		// Act
-		got, _, err := api.APISpecification.GetAll()
+		got, _, err := mockClient.APISpecification.GetAll()
 
 		// Assert
 		assert.NoError(t, err, "it does not return an error")
@@ -75,32 +88,30 @@ func Test_APISpecification_GetAll(t *testing.T) {
 	})
 
 	t.Run("when called with RequestOptions parameter", func(t *testing.T) {
-		// Act
-		expectResponse := readme.RequestOptions{
+		// Arrange
+		req := readme.RequestOptions{
 			Version: "1.2.3",
 			Headers: []readme.RequestHeader{{"foo": "bar"}},
 		}
-		got, gotResponse, err := api.APISpecification.GetAll(expectResponse)
+		expectResponse.Request.Headers = req.Headers
+		mockClient.APISpecification.EXPECT().GetAll(req).Return(expect, expectResponse, nil)
+
+		// Act
+		got, gotResponse, err := mockClient.APISpecification.GetAll(req)
 
 		// Assert
 		assert.NoError(t, err, "it does not return an error")
 		assert.Equal(t, expect, got, "it returns []APISpecification struct")
-		assert.Equal(t, expectResponse.Headers, gotResponse.Request.Headers, "it returns expected response headers")
+		assert.Equal(t, req.Headers, gotResponse.Request.Headers, "it returns expected response headers")
 	})
 
 	t.Run("when API responds with an error", func(t *testing.T) {
 		// Arrange
-		expect := readme.APIErrorResponse{}
-		expect.Error = "VERSION_EMPTY"
+		expectError := errors.New("API responded with a non-OK status: 400")
 
-		mockResponse := testutil.APITestResponse{
-			URL:     apiSpecEndpointPaginated,
-			Status:  400,
-			Body:    mockAPISpecResponseBodyError,
-			Headers: mockPaginatedRequestHeader,
-		}
-		testutil.JsonToStruct(t, mockResponse.Body, &expect)
-		api := mockResponse.New(t)
+		expectResponse := &testdata.APISpecResponseVersionEmtpy
+		api := mocks.NewTestClient(t)
+		api.APISpecification.EXPECT().GetAll().Return(nil, expectResponse, expectError)
 
 		// Act
 		_, got, err := api.APISpecification.GetAll()
@@ -108,7 +119,7 @@ func Test_APISpecification_GetAll(t *testing.T) {
 		// Assert
 		assert.Error(t, err, "it returns an error")
 		assert.ErrorContains(t, err, "API responded with a non-OK status: 400", "it returns expected error")
-		assert.Equal(t, expect, got.APIErrorResponse, "it returns API error response")
+		assert.Equal(t, expectResponse, got, "it returns API error response")
 	})
 
 	t.Run("when API response cannot be parsed", func(t *testing.T) {
