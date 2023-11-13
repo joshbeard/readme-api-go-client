@@ -265,6 +265,58 @@ func (_c *MockVersionService_GetAll_Call) RunAndReturn(run func() ([]readme.Vers
 	return _c
 }
 
+// GetVersion provides a mock function with given fields: version
+func (_m *MockVersionService) GetVersion(version string) (string, error) {
+	ret := _m.Called(version)
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) (string, error)); ok {
+		return rf(version)
+	}
+	if rf, ok := ret.Get(0).(func(string) string); ok {
+		r0 = rf(version)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(version)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockVersionService_GetVersion_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetVersion'
+type MockVersionService_GetVersion_Call struct {
+	*mock.Call
+}
+
+// GetVersion is a helper method to define mock.On call
+//   - version string
+func (_e *MockVersionService_Expecter) GetVersion(version interface{}) *MockVersionService_GetVersion_Call {
+	return &MockVersionService_GetVersion_Call{Call: _e.mock.On("GetVersion", version)}
+}
+
+func (_c *MockVersionService_GetVersion_Call) Run(run func(version string)) *MockVersionService_GetVersion_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *MockVersionService_GetVersion_Call) Return(_a0 string, _a1 error) *MockVersionService_GetVersion_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockVersionService_GetVersion_Call) RunAndReturn(run func(string) (string, error)) *MockVersionService_GetVersion_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Update provides a mock function with given fields: version, params
 func (_m *MockVersionService) Update(version string, params readme.VersionParams) (readme.Version, *readme.APIResponse, error) {
 	ret := _m.Called(version, params)

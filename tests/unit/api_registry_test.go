@@ -1,15 +1,14 @@
 package readme_test
 
 import (
+	"errors"
+	"net/http"
 	"testing"
 
-	"github.com/liveoaklabs/readme-api-go-client/internal/testutil"
 	"github.com/liveoaklabs/readme-api-go-client/readme"
 	mocks "github.com/liveoaklabs/readme-api-go-client/tests/mocks"
 	"github.com/stretchr/testify/assert"
 )
-
-const registryEndpoint = "http://readme-test.local/api/v1/api-registry"
 
 func Test_APIRegistry_Get(t *testing.T) {
 	t.Run("when called with an existing uuid", func(t *testing.T) {
@@ -47,38 +46,33 @@ func Test_APIRegistry_Get(t *testing.T) {
 
 	t.Run("when API responds with 404", func(t *testing.T) {
 		// Arrange
-		mockResponse := testutil.APITestResponse{
-			URL:    registryEndpoint + "/invalid",
-			Status: 404,
-			Body:   `{"error": "REGISTRY_NOTFOUND"}`,
+		expectResponse := &readme.APIResponse{
+			HTTPResponse: &http.Response{
+				StatusCode: 404,
+			},
 		}
-		expect := readme.APIErrorResponse{}
-		expect.Error = "REGISTRY_NOTFOUND"
-		testutil.JsonToStruct(t, mockResponse.Body, &expect)
-		api := mockResponse.New(t)
+		expectError := errors.New("API responded with a non-OK status: 404")
+
+		mockClient := mocks.NewTestClient(t)
+		mockClient.APIRegistry.EXPECT().Get("invalid").Return(string(expectResponse.Body), expectResponse, expectError)
 
 		// Act
-		_, gotResponse, err := api.APIRegistry.Get("invalid")
-		got := gotResponse.APIErrorResponse
+		got, gotResponse, err := mockClient.APIRegistry.Get("invalid")
 
 		// Assert
 		assert.Error(t, err, "it returns an error")
 		assert.ErrorContains(t, err, "API responded with a non-OK status: 404", "it returns the expected error")
-		assert.Equal(
-			t,
-			expect,
-			got,
-			"returns expected APIErrorResponse struct",
-			"it returns an APIErrorResponse struct",
-		)
+		assert.Equal(t, expectResponse, gotResponse, "it returns the expected response")
+		assert.Equal(t, string(expectResponse.Body), got, "it returns the expected body")
+
+		mockClient.APIRegistry.AssertExpectations(t)
 	})
 }
 
 func Test_APIRegistry_Create(t *testing.T) {
 	// Arrange
-	expect := make(map[string]interface{})
-
-	testDefinition := `{
+	testDefinition := `
+	{
 		"openapi": "3.0.0",
 		"info": {
 			"version": "1.0.0",
@@ -89,44 +83,72 @@ func Test_APIRegistry_Create(t *testing.T) {
 		}
 	}
 	`
-	mockResponse := testutil.APITestResponse{
-		URL:    registryEndpoint,
-		Status: 201,
-		Body:   `{"registryUUID": "abcdefghijklmno", "definition": ` + testDefinition + `}`,
+	expect := readme.APIRegistrySaved{
+		Definition: map[string]interface{}{
+			"openapi": "3.0.0",
+			"info": map[string]interface{}{
+				"version": "1.0.0",
+				"title":   "Test Pet Store Test again",
+				"license": map[string]interface{}{
+					"name": "MIT",
+				},
+			},
+		},
+		RegistryUUID: "abcdefghijklmno",
 	}
-	api := mockResponse.New(t)
 
-	testutil.JsonToStruct(t, testDefinition, &expect)
+	expectResponse := readme.APIResponse{
+		APIErrorResponse: readme.APIErrorResponse{},
+		Body:             []byte(`{"registryUUID": "abcdefghijklmno", "definition": ` + testDefinition + `}`),
+	}
 
 	t.Run("when called with a definition and no version specified", func(t *testing.T) {
 		// Act
+		api := mocks.NewTestClient(t)
+		api.APIRegistry.EXPECT().Create(testDefinition).Return(expect, &expectResponse, nil)
 		got, _, err := api.APIRegistry.Create(testDefinition)
 
 		// Assert
 		assert.NoError(t, err, "it does not return an error")
-		assert.Equal(t, "abcdefghijklmno", got.RegistryUUID, "it returns the expected uuid")
-		assert.Equal(t, expect, got.Definition, "it returns the expected definition")
+		assert.Equal(t, expect, got, "it returns the expected definition")
+
+		api.APIRegistry.AssertExpectations(t)
 	})
 
 	t.Run("when called with a version specified", func(t *testing.T) {
 		// Act
+		api := mocks.NewTestClient(t)
+		expectResponse.Request = &readme.APIRequest{
+			RequestOptions: readme.RequestOptions{
+				Version: "1.2.3",
+			},
+		}
+		api.APIRegistry.EXPECT().Create(testDefinition, "1.2.3").Return(expect, &expectResponse, nil)
 		got, apiResponse, err := api.APIRegistry.Create(testDefinition, "1.2.3")
 
 		// Assert
 		assert.NoError(t, err, "it does not return an error")
 		assert.Equal(t, "1.2.3", apiResponse.Request.Version, "it returns the expected response")
 		assert.Equal(t, "abcdefghijklmno", got.RegistryUUID, "it returns the expected uuid")
-		assert.Equal(t, expect, got.Definition, "it returns the expected definition")
+		assert.Equal(t, expect, got, "it returns the expected definition")
+
+		api.APIRegistry.AssertExpectations(t)
 	})
 
 	t.Run("when API responds with 400", func(t *testing.T) {
 		// Arrange
-		mockResponse := testutil.APITestResponse{
-			URL:    registryEndpoint,
-			Status: 400,
-			Body:   `{"error": "ERROR_SPEC_INVALID"}`,
+		expectResponse := readme.APIResponse{
+			HTTPResponse: &http.Response{
+				StatusCode: 400,
+			},
+			APIErrorResponse: readme.APIErrorResponse{
+				Error: "ERROR_SPEC_INVALID",
+			},
+			Body: []byte(`{"error": "ERROR_SPEC_INVALID"}`),
 		}
-		api := mockResponse.New(t)
+		expectError := errors.New("API responded with a non-OK status: 400")
+		api := mocks.NewTestClient(t)
+		api.APIRegistry.EXPECT().Create("").Return(expect, &expectResponse, expectError)
 
 		// Act
 		_, apiResponse, err := api.APIRegistry.Create("")
@@ -135,6 +157,8 @@ func Test_APIRegistry_Create(t *testing.T) {
 		assert.Equal(t, "ERROR_SPEC_INVALID", apiResponse.APIErrorResponse.Error, "it returns the API error")
 		assert.Error(t, err, "it returns an error")
 		assert.ErrorContains(t, err, "API responded with a non-OK status: 400", "it returns expected application error")
+
+		api.APIRegistry.AssertExpectations(t)
 	})
 }
 

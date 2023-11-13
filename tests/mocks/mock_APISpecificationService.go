@@ -371,8 +371,8 @@ func (_c *MockAPISpecificationService_Update_Call) RunAndReturn(run func(string,
 	return _c
 }
 
-// uploadDefinition provides a mock function with given fields: method, content, url, version, response
-func (_m *MockAPISpecificationService) uploadDefinition(method string, content string, url string, version string, response interface{}) (interface{}, *readme.APIResponse, error) {
+// UploadDefinition provides a mock function with given fields: method, content, url, version, response
+func (_m *MockAPISpecificationService) UploadDefinition(method string, content string, url string, version string, response interface{}) (interface{}, *readme.APIResponse, error) {
 	ret := _m.Called(method, content, url, version, response)
 
 	var r0 interface{}
@@ -406,34 +406,34 @@ func (_m *MockAPISpecificationService) uploadDefinition(method string, content s
 	return r0, r1, r2
 }
 
-// MockAPISpecificationService_uploadDefinition_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'uploadDefinition'
-type MockAPISpecificationService_uploadDefinition_Call struct {
+// MockAPISpecificationService_UploadDefinition_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UploadDefinition'
+type MockAPISpecificationService_UploadDefinition_Call struct {
 	*mock.Call
 }
 
-// uploadDefinition is a helper method to define mock.On call
+// UploadDefinition is a helper method to define mock.On call
 //   - method string
 //   - content string
 //   - url string
 //   - version string
 //   - response interface{}
-func (_e *MockAPISpecificationService_Expecter) uploadDefinition(method interface{}, content interface{}, url interface{}, version interface{}, response interface{}) *MockAPISpecificationService_uploadDefinition_Call {
-	return &MockAPISpecificationService_uploadDefinition_Call{Call: _e.mock.On("uploadDefinition", method, content, url, version, response)}
+func (_e *MockAPISpecificationService_Expecter) UploadDefinition(method interface{}, content interface{}, url interface{}, version interface{}, response interface{}) *MockAPISpecificationService_UploadDefinition_Call {
+	return &MockAPISpecificationService_UploadDefinition_Call{Call: _e.mock.On("UploadDefinition", method, content, url, version, response)}
 }
 
-func (_c *MockAPISpecificationService_uploadDefinition_Call) Run(run func(method string, content string, url string, version string, response interface{})) *MockAPISpecificationService_uploadDefinition_Call {
+func (_c *MockAPISpecificationService_UploadDefinition_Call) Run(run func(method string, content string, url string, version string, response interface{})) *MockAPISpecificationService_UploadDefinition_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(string), args[1].(string), args[2].(string), args[3].(string), args[4].(interface{}))
 	})
 	return _c
 }
 
-func (_c *MockAPISpecificationService_uploadDefinition_Call) Return(_a0 interface{}, _a1 *readme.APIResponse, _a2 error) *MockAPISpecificationService_uploadDefinition_Call {
+func (_c *MockAPISpecificationService_UploadDefinition_Call) Return(_a0 interface{}, _a1 *readme.APIResponse, _a2 error) *MockAPISpecificationService_UploadDefinition_Call {
 	_c.Call.Return(_a0, _a1, _a2)
 	return _c
 }
 
-func (_c *MockAPISpecificationService_uploadDefinition_Call) RunAndReturn(run func(string, string, string, string, interface{}) (interface{}, *readme.APIResponse, error)) *MockAPISpecificationService_uploadDefinition_Call {
+func (_c *MockAPISpecificationService_UploadDefinition_Call) RunAndReturn(run func(string, string, string, string, interface{}) (interface{}, *readme.APIResponse, error)) *MockAPISpecificationService_UploadDefinition_Call {
 	_c.Call.Return(run)
 	return _c
 }

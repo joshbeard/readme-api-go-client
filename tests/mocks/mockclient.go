@@ -6,6 +6,8 @@ package mocks
 
 import (
 	"testing"
+
+	readme "github.com/liveoaklabs/readme-api-go-client/readme"
 )
 
 type MockClient struct {
@@ -19,6 +21,21 @@ type MockClient struct {
 	Image            *MockImageService
 	Project          *MockProjectService
 	Version          *MockVersionService
+}
+
+func NewReadmeClient(t *testing.T) *readme.Client {
+	return &readme.Client{
+		APIRegistry:      NewMockAPIRegistryService(t),
+		APISpecification: NewMockAPISpecificationService(t),
+		Apply:            NewMockApplyService(t),
+		Category:         NewMockCategoryService(t),
+		Changelog:        NewMockChangelogService(t),
+		CustomPage:       NewMockCustomPageService(t),
+		Doc:              NewMockDocService(t),
+		Image:            NewMockImageService(t),
+		Project:          NewMockProjectService(t),
+		Version:          NewMockVersionService(t),
+	}
 }
 
 func NewTestClient(t *testing.T) *MockClient {

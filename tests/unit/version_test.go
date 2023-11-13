@@ -210,7 +210,7 @@ func Test_Version_GetAll_Versions(t *testing.T) {
 		api := mockResponse.New(t)
 
 		// Act
-		got, err := readme.GetVersion(api.Version.(*readme.VersionClient), "id:638cf4cfdea3ff0096d1a95a")
+		got, err := api.Version.GetVersion("id:638cf4cfdea3ff0096d1a95a")
 
 		// Assert
 		assert.NoError(t, err, "it does not return an error")
@@ -227,7 +227,7 @@ func Test_Version_GetAll_Versions(t *testing.T) {
 		api := mockResponse.New(t)
 
 		// Act
-		_, err := readme.GetVersion(api.Version.(*readme.VersionClient), "id:638cf4cfdea3ff0096d1a95a")
+		_, err := api.Version.GetVersion("id:638cf4cfdea3ff0096d1a95a")
 
 		// Assert
 		assert.Error(t, err, "it returns an error")

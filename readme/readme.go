@@ -38,9 +38,66 @@ const (
 // API Registry UUID.
 var IDValidCharacters = regexp.MustCompile("^[0-9a-zA-Z]+$")
 
-type ClientInterface interface{}
+type ClientInterface interface {
+	NewAPIRegistryClient() APIRegistryClient
+	NewAPISpecificationClient() APISpecificationClient
+	NewApplyClient() ApplyClient
+	NewCategoryClient() CategoryClient
+	NewChangelogClient() ChangelogClient
+	NewCustomPageClient() CustomPageClient
+	NewDocClient() DocClient
+	NewImageClient() ImageClient
+	NewNukeClient() NukeClient
+	NewProjectClient() ProjectClient
+	NewVersionClient() VersionClient
+}
 
+// ClientInterface is an interface for the ReadMe API client.
 var _ ClientInterface = &Client{}
+
+func (c *Client) NewAPIRegistryClient() APIRegistryClient {
+	return APIRegistryClient{client: c}
+}
+
+func (c *Client) NewAPISpecificationClient() APISpecificationClient {
+	return APISpecificationClient{client: c}
+}
+
+func (c *Client) NewApplyClient() ApplyClient {
+	return ApplyClient{client: c}
+}
+
+func (c *Client) NewCategoryClient() CategoryClient {
+	return CategoryClient{client: c}
+}
+
+func (c *Client) NewChangelogClient() ChangelogClient {
+	return ChangelogClient{client: c}
+}
+
+func (c *Client) NewCustomPageClient() CustomPageClient {
+	return CustomPageClient{client: c}
+}
+
+func (c *Client) NewDocClient() DocClient {
+	return DocClient{client: c}
+}
+
+func (c *Client) NewImageClient() ImageClient {
+	return ImageClient{client: c}
+}
+
+func (c *Client) NewNukeClient() NukeClient {
+	return NukeClient{client: c}
+}
+
+func (c *Client) NewProjectClient() ProjectClient {
+	return ProjectClient{client: c}
+}
+
+func (c *Client) NewVersionClient() VersionClient {
+	return VersionClient{client: c}
+}
 
 // Client sets up the API HTTP client with authentication and exposes the API interfaces.
 type Client struct {
@@ -174,17 +231,17 @@ func NewClient(token string, apiURL ...string) (*Client, error) {
 		client.APIURL = apiURL[0]
 	}
 
-	client.APIRegistry = &APIRegistryClient{client: client}
-	client.APISpecification = &APISpecificationClient{client: client}
-	client.Apply = &ApplyClient{client: client}
-	client.Category = &CategoryClient{client: client}
-	client.Changelog = &ChangelogClient{client: client}
-	client.CustomPage = &CustomPageClient{client: client}
-	client.Doc = &DocClient{client: client}
-	client.Image = &ImageClient{client: client}
-	client.Nuke = &NukeClient{client: client}
-	client.Project = &ProjectClient{client: client}
-	client.Version = &VersionClient{client: client}
+	client.APIRegistry = client.NewAPIRegistryClient()
+	client.APISpecification = client.NewAPISpecificationClient()
+	client.Apply = client.NewApplyClient()
+	client.Category = client.NewCategoryClient()
+	client.Changelog = client.NewChangelogClient()
+	client.CustomPage = client.NewCustomPageClient()
+	client.Doc = client.NewDocClient()
+	client.Image = client.NewImageClient()
+	client.Nuke = client.NewNukeClient()
+	client.Project = client.NewProjectClient()
+	client.Version = client.NewVersionClient()
 
 	return client, nil
 }
