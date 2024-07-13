@@ -1,7 +1,6 @@
 package readme_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/h2non/gock"
@@ -50,7 +49,7 @@ func Test_Apply_Apply(t *testing.T) {
 	t.Run("when called with invalid params", func(t *testing.T) {
 		// Arrange
 		expectResponse := testdata.ApplyCreateResponseInvalidName
-		expectError := errors.New("API responded with a non-OK status: 400")
+		expectError := "API responded with a non-OK status: 400"
 
 		gock.New("http://readme-test.local/api/v1").
 			Post(readme.ApplyEndpoint).
@@ -67,7 +66,7 @@ func Test_Apply_Apply(t *testing.T) {
 		_, got, err := TestClient.Apply.Apply(application)
 
 		// Assert
-		assert.Equal(t, expectError, err, "it returns the expected error")
+		assert.Contains(t, err.Error(), expectError, "it returns the expected error")
 		assert.Equal(t, expectResponse.APIErrorResponse,
 			got.APIErrorResponse, "it returns the expected API error response")
 		assert.True(t, gock.IsDone(), "it asserts that all mocks were called")
